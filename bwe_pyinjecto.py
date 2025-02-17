@@ -249,7 +249,7 @@ def execute_with_suspension():
         print(f"{THEME_DARK_PURPLE}Invalid time entered. Aborting.{RESET}")
         return None
 
-    print(f"\n{THEME_INTERMEDIATE3}Launching '{exe_name}' and suspending after {timer:.2f} seconds...{RESET}\n")
+    print(f"\n\n{THEME_INTERMEDIATE3}Launching '{exe_name}' and suspending after {timer:.2f} seconds...{RESET}\n")
 
     # Launch the EXE. On Windows, call the EXE directly to capture its PID.
     if os.name == "nt":  
