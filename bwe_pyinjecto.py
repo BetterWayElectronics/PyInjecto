@@ -9,6 +9,7 @@ import ast
 import math
 
 # ---- Color Definitions (ANSI Escape Codes) ----
+THEME_LIGHT_RED = "\033[38;2;255;128;128m"  # For errors or warnings
 THEME_DARK_PURPLE   = "\033[38;2;85;0;145m"    # For errors
 THEME_INTERMEDIATE1 = "\033[38;2;99;43;153m"   # For option labels
 THEME_INTERMEDIATE2 = "\033[38;2;122;87;176m"  # For prompts
@@ -78,12 +79,12 @@ def choose_process():
                 psutil.Process(pid)  # Verify Process Exists
                 return pid
             except psutil.NoSuchProcess:
-                print(f"{THEME_DARK_PURPLE}No Process With That PID Found.{RESET}")
+                print(f"{THEME_LIGHT_RED}No Process With That PID Found.{RESET}")
                 continue  # Re-prompt user
         else:
             matches = search_processes(selection, processes)
             if not matches:
-                print(f"{THEME_DARK_PURPLE}No Processes Found Matching That Keyword.{RESET}")
+                print(f"{THEME_LIGHT_RED}No Processes Found Matching That Keyword.{RESET}")
                 continue  # Re-prompt user
             elif len(matches) == 1:
                 proc = matches[0]
@@ -99,7 +100,7 @@ def choose_process():
                         index = int(choice) - 1
                         if 0 <= index < len(matches):
                             return matches[index]['pid']
-                    print(f"\n{THEME_DARK_PURPLE}Invalid Selection, Try Again.{RESET}")
+                    print(f"\n{THEME_LIGHT_RED}Invalid Selection, Try Again.{RESET}")
 
 # =======================
 # DLL & Hypno Injection Functions
@@ -111,7 +112,7 @@ def list_dlls(prefix="pyinjector"):
 def choose_dll():
     dlls = list_dlls()
     if not dlls:
-        print(f"{THEME_DARK_PURPLE}No DLL Files Found Starting With 'Pyinjector' In The Current Directory.{RESET}")
+        print(f"{THEME_LIGHT_RED}No DLL Files Found Starting With 'Pyinjector' In The Current Directory.{RESET}")
         sys.exit(1)
     print(f"\n{THEME_INTERMEDIATE3}Available DLL Files:{RESET}")
     for i, dll in enumerate(dlls):
@@ -122,7 +123,7 @@ def choose_dll():
             index = int(choice) - 1
             if 0 <= index < len(dlls):
                 return dlls[index]
-        print(f"\n{THEME_DARK_PURPLE}Invalid Selection, Try Again.{RESET}")
+        print(f"\n{THEME_LIGHT_RED}Invalid Selection, Try Again.{RESET}")
         
 # =======================
 # DLL Injection Using External Injector.exe
@@ -139,7 +140,7 @@ def call_injector(pid, dll_path):
         print(result.stdout)
         return True
     else:
-        print(f"\n{THEME_DARK_PURPLE}Injector Failed!{RESET}")
+        print(f"\n{THEME_LIGHT_RED}Injector Failed!{RESET}")
         print(result.stderr)
         return False
 
@@ -155,14 +156,14 @@ def inject_hypno(pid, python_code):
         else:
             error_message = result.stderr
             if "Injector failed with -5" in error_message or "LoadLibrary" in error_message:
-                print(f"\n\n{THEME_LIGHT_BLUE}Hypno Injection Failed: The target process might already have the module injected or there is residual state causing conflicts.{RESET}")
-                print(f"{THEME_DARK_PURPLE}Error Details: {error_message}{RESET}")
+                print(f"\n\n{THEME_LIGHT_RED}Hypno Injection Failed: The target process might already have the module injected or there is residual state causing conflicts.{RESET}")
+                print(f"{THEME_LIGHT_RED}Error Details: {error_message}{RESET}")
             else:
-                print(f"{THEME_DARK_PURPLE}Hypno Injection Failed with error: {error_message}{RESET}")
-                print(f"\n\n{THEME_LIGHT_BLUE}Hypno Injection Failed{RESET}")
+                print(f"{THEME_LIGHT_RED}Hypno Injection Failed with error: {error_message}{RESET}")
+                print(f"\n\n{THEME_LIGHT_RED}Hypno Injection Failed{RESET}")
             return False
     except Exception as e:
-        print(f"\n\n{THEME_LIGHT_BLUE}Unexpected error during Hypno Injection: {e}{RESET}")
+        print(f"\n\n{THEME_LIGHT_RED}Unexpected error during Hypno Injection: {e}{RESET}")
         return False
 
 def load_py_file(filename):
@@ -177,7 +178,7 @@ def load_py_file(filename):
             code_str = content
         return code_str
     except Exception as e:
-        print(f"{THEME_DARK_PURPLE}Error Loading File '{filename}': {e}{RESET}")
+        print(f"{THEME_LIGHT_RED}Error Loading File '{filename}': {e}{RESET}")
         return None
         
 # DLL Injection Branch
@@ -187,7 +188,7 @@ def dll_injection(pid):
     if call_injector(pid, dll_path):
         print(f"{THEME_LIGHT_BLUE}DLL Injection Completed Successfully.{RESET}")
     else:
-        print(f"{THEME_DARK_PURPLE}DLL Injection Failed.{RESET}")
+        print(f"{THEME_LIGHT_RED}DLL Injection Failed.{RESET}")
 
 # ============================
 # Suspension-Based EXE Execution
@@ -199,21 +200,21 @@ def list_exes():
 def select_exe(exes):
     #Prompt user to select an .exe file.
     if not exes:
-        print(f"{THEME_DARK_PURPLE}No .exe files found in the current directory.{RESET}")
+        print(f"{THEME_LIGHT_RED}No .exe Files Found In The Current Directory.{RESET}")
         return None
     
-    print(f"\n{THEME_INTERMEDIATE3}Select an executable to run:{RESET}")
+    print(f"\n{THEME_INTERMEDIATE3}Select An Executable To Run:{RESET}")
     for i, exe in enumerate(exes, start=1):
         print(f"[{i}] {exe}")
 
     while True:
         try:
-            choice = int(input(f"\n{THEME_INTERMEDIATE2}Enter the number of the .exe file: {RESET}"))
+            choice = int(input(f"\n{THEME_INTERMEDIATE2}Enter The Number Of The .exe File: {RESET}"))
             if 1 <= choice <= len(exes):
                 return exes[choice - 1]
         except ValueError:
             pass
-        print(f"{THEME_DARK_PURPLE}Invalid choice. Try again.{RESET}")
+        print(f"{THEME_LIGHT_RED}Invalid choice. Try again.{RESET}")
 
 def suspend_processes(pid):
     #Suspend a process and all its child processes.
@@ -221,17 +222,17 @@ def suspend_processes(pid):
         parent = psutil.Process(pid)
         children = parent.children(recursive=True)  
 
-        print(f"{THEME_INTERMEDIATE3}Suspending main process {pid} ({parent.name()}){RESET}")
+        print(f"{THEME_INTERMEDIATE3}Suspending Main Process {pid} ({parent.name()}){RESET}")
         parent.suspend()
         
         for child in children:
             try:
-                print(f"{THEME_INTERMEDIATE3}Suspending subprocess {child.pid} ({child.name()}){RESET}")
+                print(f"{THEME_INTERMEDIATE3}Suspending Subprocess {child.pid} ({child.name()}){RESET}")
                 child.suspend()
             except psutil.NoSuchProcess:
                 pass
     except psutil.NoSuchProcess:
-        print(f"{THEME_DARK_PURPLE}Main process no longer exists.{RESET}")
+        print(f"{THEME_LIGHT_RED}Main Process No Longer Exists.{RESET}")
 
 def execute_with_suspension():
     #Launches an EXE in a new console, waits for a specified time,
@@ -244,12 +245,12 @@ def execute_with_suspension():
         return None
 
     try:
-        timer = float(input(f"{THEME_INTERMEDIATE2}Enter time before suspension (seconds): {RESET}").strip())
+        timer = float(input(f"{THEME_INTERMEDIATE2}Enter Time Before Suspension (Seconds): {RESET}").strip())
     except ValueError:
-        print(f"{THEME_DARK_PURPLE}Invalid time entered. Aborting.{RESET}")
+        print(f"{THEME_LIGHT_RED}Invalid Time Entered. Aborting.{RESET}")
         return None
 
-    print(f"\n\n{THEME_INTERMEDIATE3}Launching '{exe_name}' and suspending after {timer:.2f} seconds...{RESET}\n")
+    print(f"\n\n{THEME_INTERMEDIATE3}Launching '{exe_name}' And Suspending After {timer:.2f} Seconds...{RESET}\n")
 
     # Launch the EXE. On Windows, call the EXE directly to capture its PID.
     if os.name == "nt":  
@@ -267,7 +268,7 @@ def execute_with_suspension():
         children = main_proc.children(recursive=True)
         group = [main_proc] + children
         
-        print(f"\n{THEME_INTERMEDIATE3}Suspended Processes in '{exe_name}':{RESET}")
+        print(f"\n{THEME_INTERMEDIATE3}Suspended Processes In '{exe_name}':{RESET}")
         for idx, proc in enumerate(group, 1):
             try:
                 print(f"{THEME_INTERMEDIATE1}{idx}:{RESET} PID: {proc.pid} - Name: {proc.name()}")
@@ -275,14 +276,14 @@ def execute_with_suspension():
                 continue
         
         while True:
-            choice = input(f"\n{THEME_INTERMEDIATE2}Select a process by number for injection: {RESET}").strip()
+            choice = input(f"\n{THEME_INTERMEDIATE2}Select A Process By Number For Injection: {RESET}").strip()
             if choice.isdigit():
                 index = int(choice) - 1
                 if 0 <= index < len(group):
                     return group[index].pid
-            print(f"{THEME_DARK_PURPLE}Invalid selection, try again.{RESET}")
+            print(f"{THEME_LIGHT_RED}Invalid Selection, Try Again.{RESET}")
     except psutil.NoSuchProcess:
-        print(f"{THEME_DARK_PURPLE}The launched process no longer exists.{RESET}")
+        print(f"{THEME_LIGHT_RED}The launched process no longer exists.{RESET}")
         return None
 
 # ========================
@@ -291,7 +292,7 @@ def execute_with_suspension():
 def main():
     print_banner()
     print(f"{THEME_INTERMEDIATE3}=== Choose a Function ==={RESET}")
-    print(f"{THEME_INTERMEDIATE1}1:{RESET} Process Injection (DLL/Python)")
+    print(f"{THEME_INTERMEDIATE1}1:{RESET} Process Injection")
     print(f"{THEME_INTERMEDIATE1}2:{RESET} Run EXE and Suspend After Delay")
     
     function_choice = input(f"\n{THEME_INTERMEDIATE2}Make A Selection: {RESET}").strip()
@@ -299,27 +300,27 @@ def main():
     if function_choice == "2":
         target_pid = execute_with_suspension()
         if target_pid is None:
-            print(f"{THEME_DARK_PURPLE}No valid process selected. Exiting.{RESET}")
+            print(f"{THEME_LIGHT_RED}No Valid Process Selected. Exiting.{RESET}")
             return
     else:
-        print(f"{THEME_INTERMEDIATE3}=== Process Selection ==={RESET}")
+        print(f"\n{THEME_INTERMEDIATE3}=== Process Selection ==={RESET}")
         target_pid = choose_process()
         print(f"\n{THEME_LIGHT_BLUE}Selected Process PID: {target_pid}{RESET}")
 
     print(f"\n{THEME_INTERMEDIATE3}=== Injection Method ==={RESET}")
-    print(f"{THEME_INTERMEDIATE1}1:{RESET} Inject DLL (Using Injector.exe)")
-    print(f"{THEME_INTERMEDIATE1}2:{RESET} Use Hypno (Inject Python Code)")
+    print(f"{THEME_INTERMEDIATE1}1:{RESET} Inject DLL (Using PyInjector x64/x86)")
+    print(f"{THEME_INTERMEDIATE1}2:{RESET} Use Hypno (Type/Load Python Code)")
     while True:
         method = input(f"\n{THEME_INTERMEDIATE2}Enter 1 Or 2: {RESET}").strip()
         if method in ("1", "2"):
             break
-        print(f"\n{THEME_DARK_PURPLE}Invalid Input. Please Enter 1 Or 2.{RESET}")
+        print(f"\n{THEME_LIGHT_RED}Invalid Input. Please Enter 1 Or 2.{RESET}")
 
     if method == "1":
         dll_injection(target_pid)
     else:
         print(f"\n{THEME_LIGHT_BLUE}Enter Python Code To Inject.{RESET}")
-        print(f"{THEME_LIGHT_BLUE}Type '!Load filename.py' To Load An Entire File, Or '!Quit' To Exit.{RESET}\n")
+        print(f"{THEME_LIGHT_BLUE}Type '!load filename.py' To Load An Entire File, Or '!quit' To Exit.{RESET}\n")
         while True:
             python_input = input(f"{THEME_INTERMEDIATE2}Hypno> {RESET}").strip()
             if python_input.lower() == "!quit":
@@ -335,10 +336,10 @@ def main():
                 if code_to_inject is None:
                     continue
                 if not inject_hypno(target_pid, code_to_inject):
-                    print(f"{THEME_DARK_PURPLE}Hypno Injection Failed.{RESET}")
+                    print(f"{THEME_LIGHT_RED}Hypno Injection Failed.{RESET}")
             else:
                 if not inject_hypno(target_pid, python_input):
-                    print(f"{THEME_DARK_PURPLE}Hypno Injection Failed.{RESET}")
+                    print(f"{THEME_LIGHT_RED}Hypno Injection Failed.{RESET}")
 
 if __name__ == "__main__":
     main()
